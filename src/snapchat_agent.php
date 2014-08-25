@@ -50,9 +50,9 @@ abstract class SnapchatAgent {
 	 * authenticity, right?
 	 */
 	public static $CURL_OPTIONS = array(
-		CURLOPT_CONNECTTIMEOUT => 5,
+		CURLOPT_CONNECTTIMEOUT => 500,
 		CURLOPT_RETURNTRANSFER => TRUE,
-		CURLOPT_TIMEOUT => 10,
+		CURLOPT_TIMEOUT => 1000,
 		CURLOPT_USERAGENT => 'Snapchat/4.1.07 (Nexus 4; Android 18; gzip)',
 	);
 
