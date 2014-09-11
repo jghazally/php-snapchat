@@ -39,6 +39,11 @@ abstract class SnapchatAgent {
 	const BLOB_ENCRYPTION_KEY = 'M02cnQ51Ji97vwT4';
 
 	/*
+	 * The last error returned from the API
+	 */
+	private $lastError = false;
+
+	/*
 	 * The hash pattern.
 	 *
 	 * @see self::hash()
@@ -229,6 +234,9 @@ abstract class SnapchatAgent {
 	 *   the request failed.
 	 */
 	public function post($endpoint, $data, $params, $multipart = FALSE) {
+		// Reset last error
+		$this->lastError = false;
+
 		$ch = curl_init();
 
 		$data['req_token'] = self::hash($params[0], $params[1]);
@@ -256,7 +264,17 @@ abstract class SnapchatAgent {
 
 		// If the cURL request fails, return FALSE. Also check the status code
 		// since the API generally won't return friendly errors.
+		// UPDATE: Sometimes it does. Better to store these errors somewhere so
+		// we can use them if we want.
 		if ($result === FALSE || curl_getinfo($ch, CURLINFO_HTTP_CODE) != 200) {
+			if ($result !== FALSE) {
+				$result = iconv('UTF-8', 'UTF-8//IGNORE', utf8_encode($result));
+
+				$data = json_decode($result);
+				if (json_last_error() == JSON_ERROR_NONE) {
+					$this->lastError = $data;
+				}
+			}
 			curl_close($ch);
 			return FALSE;
 		}
@@ -274,4 +292,20 @@ abstract class SnapchatAgent {
 		return json_last_error() == JSON_ERROR_NONE ? $data : FALSE;
 	}
 
+	/**
+	 * If there was any error with the last request, return the decoded
+	 * JSON data. Then the application can choose to print a "friendly"
+	 * error message if it exists.
+	 *
+	 * @param bool $messageStringOnly
+	 *   If true, only return the error message (if it's set).
+	 *
+	 * @return mixed
+	 */
+	public function getLastError($messageStringOnly = false) {
+		if ($messageStringOnly) {
+			return isset($this->lastError['message']) ? $this->lastError['message'] : null;
+		}
+		return $this->lastError;
+	}
 }
