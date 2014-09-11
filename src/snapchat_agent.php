@@ -267,13 +267,11 @@ abstract class SnapchatAgent {
 		// UPDATE: Sometimes it does. Better to store these errors somewhere so
 		// we can use them if we want.
 		if ($result === FALSE || curl_getinfo($ch, CURLINFO_HTTP_CODE) != 200) {
-			if ($result !== FALSE) {
-				$result = iconv('UTF-8', 'UTF-8//IGNORE', utf8_encode($result));
+			$result = iconv('UTF-8', 'UTF-8//IGNORE', utf8_encode($result));
 
-				$data = json_decode($result);
-				if (json_last_error() == JSON_ERROR_NONE) {
-					$this->lastError = $data;
-				}
+			$data = json_decode($result);
+			if (json_last_error() == JSON_ERROR_NONE) {
+				$this->lastError = $data;
 			}
 			curl_close($ch);
 			return FALSE;
